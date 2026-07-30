@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>حاسبة العمر المتقدمة | Advanced Age Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&family=Aref+Ruqaa:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#0a0e1c;
+    --bg-panel:rgba(20,27,48,0.72);
+    --bg-panel-solid:#141b30;
+    --gold:#d9a65c;
+    --gold-bright:#f0c987;
+    --teal:#5fd0c0;
+    --text-primary:#ece8df;
+    --text-muted:#8b93ab;
+    --border:rgba(217,166,92,0.22);
+    --radius:22px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg-deep);
+    color:var(--text-primary);
+    font-family:'Tajawal',sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+    line-height:1.6;
+  }
+  body.lang-en{font-family:'Tajawal',sans-serif;}
+  h1,h2,h3{font-family:'Aref Ruqaa',serif; font-weight:700;}
+  body.lang-en h1, body.lang-en h2, body.lang-en h3{font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:600;}
+
+  #stars{
+    position:fixed; inset:0; z-index:-1; display:block;
+    background:radial-gradient(ellipse at 50% -10%, #1a2340 0%, #0a0e1c 60%);
+  }
+
+  .hidden{display:none !important;}
+
+  /* Language screen */
+  .lang-screen{
+    min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:40px; padding:24px; text-align:center;
+  }
+  .lang-screen h1{
+    font-size:2.4rem; color:var(--gold-bright);
+    text-shadow:0 0 24px rgba(217,166,92,0.35);
+  }
+  .lang-screen p{color:var(--text-muted); font-size:1rem; max-width:320px;}
+  .lang-buttons{display:flex; gap:16px; flex-wrap:wrap; justify-content:center;}
+  .lang-buttons button{
+    font-family:'Tajawal',sans-serif; font-size:1.15rem; font-weight:700;
+    padding:16px 36px; border-radius:16px; border:1px solid var(--border);
+    background:var(--bg-panel); color:var(--text-primary); cursor:pointer;
+    backdrop-filter:blur(10px); transition:all .25s ease;
+  }
+  .lang-buttons button:hover, .lang-buttons button:focus-visible{
+    border-color:var(--gold); box-shadow:0 0 20px rgba(217,166,92,0.25); transform:translateY(-2px);
+    outline:none;
+  }
+
+  /* App shell */
+  .app{max-width:640px; margin:0 auto; padding:28px 18px 60px;}
+  .app-header{
+    display:flex; align-items:center; justify-content:space-between; margin-bottom:28px;
+  }
+  .app-header h1{font-size:1.6rem; color:var(--gold-bright);}
+  .back-link{color:var(--text-muted); font-size:.85rem; text-decoration:none; border-bottom:1px dotted var(--text-muted);}
+  .lang-switch{
+    background:none; border:1px solid var(--border); color:var(--text-muted);
+    padding:6px 14px; border-radius:20px; font-family:'Tajawal',sans-serif; font-size:.8rem; cursor:pointer;
+  }
+
+  .card{
+    background:var(--bg-panel); border:1px solid var(--border); border-radius:var(--radius);
+    padding:24px 20px; margin-bottom:20px; backdrop-filter:blur(14px);
+    box-shadow:0 8px 32px rgba(0,0,0,0.35);
+  }
+
+  .section-eyebrow{
+    display:flex; align-items:center; gap:10px; margin-bottom:16px;
+    color:var(--gold); font-size:.8rem; letter-spacing:.06em; text-transform:uppercase;
+  }
+  .section-eyebrow .glyph{font-size:1.1rem;}
+  .card h2{font-size:1.4rem; color:var(--text-primary); margin-bottom:6px;}
+
+  /* Input card */
+  .calendar-toggle{display:flex; gap:10px; margin-bottom:20px;}
+  .cal-btn{
+    flex:1; padding:12px; border-radius:14px; border:1px solid var(--border);
+    background:transparent; color:var(--text-muted); font-family:'Tajawal',sans-serif;
+    font-size:.95rem; font-weight:500; cursor:pointer; transition:all .2s ease;
+  }
+  .cal-btn.active{background:rgba(217,166,92,0.16); color:var(--gold-bright); border-color:var(--gold);}
+
+  .date-fields{display:grid; grid-template-columns:1fr 1.6fr 1fr; gap:10px; margin-bottom:20px;}
+  .date-fields select{
+    width:100%; padding:14px 8px; border-radius:12px; border:1px solid var(--border);
+    background:var(--bg-panel-solid); color:var(--text-primary); font-family:'Tajawal',sans-serif;
+    font-size:.95rem; text-align:center; appearance:none;
+  }
+  .date-fields select:focus-visible{outline:2px solid var(--gold);}
+
+  .calc-btn{
+    width:100%; padding:16px; border-radius:14px; border:none; cursor:pointer;
+    background:linear-gradient(135deg, var(--gold), #b5793a); color:#1a1206;
+    font-family:'Tajawal',sans-serif; font-size:1.05rem; font-weight:700;
+    box-shadow:0 6px 20px rgba(217,166,92,0.3); transition:transform .15s ease;
+  }
+  .calc-btn:hover{transform:translateY(-2px);}
+  .calc-btn:focus-visible{outline:2px solid var(--teal);}
+  .error-msg{color:#e88; font-size:.85rem; margin-top:10px; display:none;}
+
+  /* Section 1: age */
+  .age-hero{display:flex; justify-content:space-between; gap:8px; text-align:center;}
+  .age-hero .unit{flex:1;}
+  .age-hero .num{font-size:2.1rem; font-weight:900; color:var(--gold-bright); display:block; font-family:'Tajawal',sans-serif;}
+  .age-hero .lbl{font-size:.78rem; color:var(--text-muted);}
+
+  /* Section 2: units grid */
+  .units-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .unit-box{
+    background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:14px;
+    padding:16px 10px; text-align:center;
+  }
+  .unit-box .num{font-size:1.4rem; font-weight:700; color:var(--teal); display:block;}
+  .unit-box .lbl{font-size:.75rem; color:var(--text-muted); margin-top:4px;}
+
+  /* Section 3: countdown */
+  .countdown-wrap{display:flex; flex-direction:column; align-items:center; gap:16px;}
+  .ring-box{position:relative; width:160px; height:160px;}
+  .ring-box svg{transform:rotate(-90deg); width:100%; height:100%;}
+  .ring-bg{fill:none; stroke:rgba(255,255,255,0.06); stroke-width:10;}
+  .ring-fg{fill:none; stroke:var(--gold); stroke-width:10; stroke-linecap:round; transition:stroke-dashoffset 1s linear;}
+  .ring-center{
+    position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  .ring-center .moon{font-size:1.8rem;}
+  .countdown-date{color:var(--gold-bright); font-size:1.05rem; font-weight:700; text-align:center;}
+  .countdown-timer{display:flex; gap:10px;}
+  .countdown-timer .box{text-align:center; min-width:52px;}
+  .countdown-timer .num{font-size:1.3rem; font-weight:700; color:var(--text-primary); display:block;}
+  .countdown-timer .lbl{font-size:.68rem; color:var(--text-muted);}
+
+  /* Section 4: facts */
+  .facts-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .fact-box{
+    background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:14px; padding:16px 12px;
+  }
+  .fact-box .glyph{font-size:1.4rem; display:block; margin-bottom:6px;}
+  .fact-box .num{font-size:1.05rem; font-weight:700; color:var(--gold-bright); display:block;}
+  .fact-box .lbl{font-size:.72rem; color:var(--text-muted); margin-top:2px;}
+
+  /* Section 5: zodiac */
+  .zodiac-card{text-align:center;}
+  .zodiac-symbol{font-size:3rem; color:var(--teal); margin-bottom:6px;}
+  .zodiac-card h3{font-size:1.5rem; color:var(--gold-bright); margin-bottom:10px;}
+  .zodiac-card p{color:var(--text-muted); font-size:.95rem; max-width:480px; margin:0 auto;}
+
+  .recalc-btn{
+    width:100%; padding:14px; border-radius:14px; border:1px solid var(--border);
+    background:transparent; color:var(--gold-bright); font-family:'Tajawal',sans-serif;
+    font-size:.95rem; font-weight:700; cursor:pointer; margin-top:6px;
+  }
+
+  @media (max-width:380px){
+    .facts-grid, .units-grid{grid-template-columns:1fr 1fr;}
+    .age-hero{flex-wrap:wrap;}
+    .age-hero .unit{flex:1 1 30%;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .ring-fg{transition:none;}
+  }
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<div class="lang-screen" id="langScreen">
+  <h1>حاسبة العمر المتقدمة<br><span style="font-size:1.2rem; color:var(--text-muted); font-family:'Tajawal',sans-serif;">Advanced Age Calculator</span></h1>
+  <p>اختر لغتك للمتابعة — Choose your language to continue</p>
+  <div class="lang-buttons">
+    <button data-lang="ar">العربية</button>
+    <button data-lang="en">English</button>
+  </div>
+</div>
+
+<main class="app hidden" id="app">
+  <div class="app-header">
+    <a href="../index.html" class="back-link" id="backLink">→ الرئيسية</a>
+    <h1 id="appTitle">حاسبة العمر المتقدمة</h1>
+    <button class="lang-switch" id="langSwitch">EN</button>
+  </div>
+
+  <section class="card input-card">
+    <div class="calendar-toggle">
+      <button class="cal-btn active" id="calGreg" data-cal="gregorian">ميلادي</button>
+      <button class="cal-btn" id="calHijri" data-cal="hijri">هجري</button>
+    </div>
+    <div class="date-fields">
+      <select id="dayField" aria-label="اليوم"></select>
+      <select id="monthField" aria-label="الشهر"></select>
+      <select id="yearField" aria-label="السنة"></select>
+    </div>
+    <button class="calc-btn" id="calcBtn">احسب عمري</button>
+    <div class="error-msg" id="errorMsg"></div>
+  </section>
+
+  <section class="results hidden" id="results">
+
+    <section class="card">
+      <div class="section-eyebrow"><span class="glyph">⏳</span><span id="lbl_section1">العمر</span></div>
+      <div class="age-hero">
+        <div class="unit"><span class="num" id="ageYears">0</span><span class="lbl" id="lbl_years">سنة</span></div>
+        <div class="unit"><span class="num" id="ageMonths">0</span><span class="lbl" id="lbl_months">شهر</span></div>
+        <div class="unit"><span class="num" id="ageDays">0</span><span class="lbl" id="lbl_days">يوم</span></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-eyebrow"><span class="glyph">◐</span><span id="lbl_section2">العمر بوحدات مختلفة</span></div>
+      <div class="units-grid">
+        <div class="unit-box"><span class="num" id="unitMonths">0</span><span class="lbl" id="lbl_unitMonths">شهراً</span></div>
+        <div class="unit-box"><span class="num" id="unitWeeks">0</span><span class="lbl" id="lbl_unitWeeks">أسبوعاً</span></div>
+        <div class="unit-box"><span class="num" id="unitHours">0</span><span class="lbl" id="lbl_unitHours">ساعة</span></div>
+        <div class="unit-box"><span class="num" id="unitMinutes">0</span><span class="lbl" id="lbl_unitMinutes">دقيقة</span></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-eyebrow"><span class="glyph">✦</span><span id="lbl_section3">عيد ميلادك القادم</span></div>
+      <div class="countdown-wrap">
+        <div class="ring-box">
+          <svg viewBox="0 0 140 140">
+            <circle class="ring-bg" cx="70" cy="70" r="60"></circle>
+            <circle class="ring-fg" id="ringFg" cx="70" cy="70" r="60"></circle>
+          </svg>
+          <div class="ring-center"><span class="moon">🌙</span></div>
+        </div>
+        <div class="countdown-date" id="nextBirthdayDate">—</div>
+        <div class="countdown-timer">
+          <div class="box"><span class="num" id="cdDays">0</span><span class="lbl" id="lbl_cdDays">يوم</span></div>
+          <div class="box"><span class="num" id="cdHours">0</span><span class="lbl" id="lbl_cdHours">ساعة</span></div>
+          <div class="box"><span class="num" id="cdMinutes">0</span><span class="lbl" id="lbl_cdMinutes">دقيقة</span></div>
+          <div class="box"><span class="num" id="cdSeconds">0</span><span class="lbl" id="lbl_cdSeconds">ثانية</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-eyebrow"><span class="glyph">✧</span><span id="lbl_section4">حقائق ممتعة عنك</span></div>
+      <div class="facts-grid">
+        <div class="fact-box"><span class="glyph">📅</span><span class="num" id="factDay">—</span><span class="lbl" id="lbl_factDay">يوم الميلاد</span></div>
+        <div class="fact-box"><span class="glyph">🍃</span><span class="num" id="factSeason">—</span><span class="lbl" id="lbl_factSeason">فصل الميلاد</span></div>
+        <div class="fact-box"><span class="glyph">💨</span><span class="num" id="factBreaths">—</span><span class="lbl" id="lbl_factBreaths">نفَساً تقريباً</span></div>
+        <div class="fact-box"><span class="glyph">❤️</span><span class="num" id="factHeartbeats">—</span><span class="lbl" id="lbl_factHeartbeats">نبضة قلب</span></div>
+        <div class="fact-box"><span class="glyph">😄</span><span class="num" id="factLaughs">—</span><span class="lbl" id="lbl_factLaughs">ضحكة تقريباً</span></div>
+        <div class="fact-box"><span class="glyph">😴</span><span class="num" id="factSleep">—</span><span class="lbl" id="lbl_factSleep">سنوات نوم</span></div>
+      </div>
+    </section>
+
+    <section class="card zodiac-card">
+      <div class="section-eyebrow" style="justify-content:center;"><span class="glyph">☾</span><span id="lbl_section5">برجك</span></div>
+      <div class="zodiac-symbol" id="zodiacSymbol">—</div>
+      <h3 id="zodiacName">—</h3>
+      <p id="zodiacDesc">—</p>
+    </section>
+
+    <button class="recalc-btn" id="recalcBtn">احسب من جديد</button>
+  </section>
+</main>
+
+<script>
+/* ================= Starfield background ================= */
+(function(){
+  const canvas = document.getElementById('stars');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const count = Math.floor((canvas.width*canvas.height)/9000);
+    stars = Array.from({length:count}, ()=>({
+      x:Math.random()*canvas.width,
+      y:Math.random()*canvas.height,
+      r:Math.random()*1.3+0.3,
+      phase:Math.random()*Math.PI*2,
+      speed:Math.random()*0.02+0.005
+    }));
+  }
+  function draw(t){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(const s of stars){
+      const tw = reduceMotion ? 1 : (Math.sin(t*s.speed + s.phase)*0.4+0.6);
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(230,225,210,${tw})`;
+      ctx.fill();
+    }
+    if(!reduceMotion) requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+  draw(0);
+  if(reduceMotion) draw(0);
+})();
+
+/* ================= Data: translations ================= */
+const T = {
+  ar:{
+    dir:'rtl', appTitle:'حاسبة العمر المتقدمة', back:'→ الرئيسية', langBtn:'EN',
+    gregorian:'ميلادي', hijri:'هجري', day:'اليوم', month:'الشهر', year:'السنة',
+    calc:'احسب عمري', recalc:'احسب من جديد',
+    errFuture:'الرجاء إدخال تاريخ ميلاد في الماضي',
+    section1:'العمر', years:'سنة', months:'شهر', days:'يوم',
+    section2:'العمر بوحدات مختلفة', unitMonths:'شهراً', unitWeeks:'أسبوعاً', unitHours:'ساعة', unitMinutes:'دقيقة',
+    section3:'عيد ميلادك القادم', cdDays:'يوم', cdHours:'ساعة', cdMinutes:'دقيقة', cdSeconds:'ثانية',
+    section4:'حقائق ممتعة عنك',
+    factDay:'يوم الميلاد', factSeason:'فصل الميلاد', factBreaths:'نفَساً تقريباً', factHeartbeats:'نبضة قلب', factLaughs:'ضحكة تقريباً', factSleep:'سنوات نوم',
+    section5:'برجك',
+    weekdays:['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'],
+    gMonths:['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'],
+    hMonths:['محرم','صفر','ربيع الأول','ربيع الآخر','جمادى الأولى','جمادى الآخرة','رجب','شعبان','رمضان','شوال','ذو القعدة','ذو الحجة'],
+    seasons:['شتاء','ربيع','صيف','خريف']
+  },
+  en:{
+    dir:'ltr', appTitle:'Advanced Age Calculator', back:'← Home', langBtn:'AR',
+    gregorian:'Gregorian', hijri:'Hijri', day:'Day', month:'Month', year:'Year',
+    calc:'Calculate My Age', recalc:'Calculate Again',
+    errFuture:'Please enter a birth date in the past',
+    section1:'Your Age', years:'Years', months:'Months', days:'Days',
+    section2:'Age in Different Units', unitMonths:'Months', unitWeeks:'Weeks', unitHours:'Hours', unitMinutes:'Minutes',
+    section3:'Your Next Birthday', cdDays:'Days', cdHours:'Hours', cdMinutes:'Minutes', cdSeconds:'Seconds',
+    section4:'Fun Facts About You',
+    factDay:'Day of Birth', factSeason:'Birth Season', factBreaths:'Approx. Breaths', factHeartbeats:'Heartbeats', factLaughs:'Approx. Laughs', factSleep:'Years Slept',
+    section5:'Your Zodiac Sign',
+    weekdays:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
+    gMonths:['January','February','March','April','May','June','July','August','September','October','November','December'],
+    hMonths:['Muharram','Safar','Rabi al-Awwal','Rabi al-Thani','Jumada al-Awwal','Jumada al-Thani','Rajab','Shaaban','Ramadan','Shawwal','Dhu al-Qadah','Dhu al-Hijjah'],
+    seasons:['Winter','Spring','Summer','Autumn']
+  }
+};
+
+/* ================= Zodiac data ================= */
+const ZODIAC = [
+  {symbol:'♈', start:[3,21], end:[4,19],
+    ar:{name:'الحمل', desc:'شخصية مندفعة ومليئة بالحماس، تحب المبادرة والريادة ولا تخشى بدء تحديات جديدة. صريح وشجاع، لكنه يحتاج أحياناً للصبر قبل اتخاذ القرار.'},
+    en:{name:'Aries', desc:'Bold and energetic, a natural starter who thrives on new challenges. Direct and courageous, though patience before deciding can help.'}},
+  {symbol:'♉', start:[4,20], end:[5,20],
+    ar:{name:'الثور', desc:'شخصية هادئة وثابتة، تقدّر الاستقرار والراحة وتعمل بصبر نحو أهدافها. مخلص وعملي، ويميل للتمسك برأيه حين يقتنع به.'},
+    en:{name:'Taurus', desc:'Grounded and steady, valuing stability and working patiently toward goals. Loyal and practical, though once decided, firmly set in their ways.'}},
+  {symbol:'♊', start:[5,21], end:[6,20],
+    ar:{name:'الجوزاء', desc:'ذكي وسريع البديهة، يحب التواصل والتنوع ولا يمل من التعلم. فضولي واجتماعي، لكنه قد يجد صعوبة بالثبات على قرار واحد.'},
+    en:{name:'Gemini', desc:'Quick-witted and curious, thriving on conversation and variety. Sociable and adaptable, though sometimes torn between options.'}},
+  {symbol:'♋', start:[6,21], end:[7,22],
+    ar:{name:'السرطان', desc:'عاطفي وحساس، يقدّر العائلة والانتماء ويهتم بمن حوله بصدق. حدسه قوي، لكنه يحتاج لمساحة آمنة ليعبّر عن مشاعره.'},
+    en:{name:'Cancer', desc:'Emotional and caring, deeply valuing home and close bonds. Intuitive and protective, needing a safe space to open up.'}},
+  {symbol:'♌', start:[7,23], end:[8,22],
+    ar:{name:'الأسد', desc:'واثق وكاريزمي، يحب الظهور والقيادة ويعطي بسخاء لمن حوله. طموح ومخلص، لكنه يقدّر التقدير والاعتراف بجهوده.'},
+    en:{name:'Leo', desc:'Confident and warm-hearted, a natural leader who gives generously. Ambitious and loyal, appreciating recognition for their effort.'}},
+  {symbol:'♍', start:[8,23], end:[9,22],
+    ar:{name:'العذراء', desc:'دقيق ومنظّم، يهتم بالتفاصيل ويسعى للكمال في كل ما يقوم به. عملي ومحلل، وقد يكون قاسياً على نفسه أحياناً.'},
+    en:{name:'Virgo', desc:'Detail-oriented and organized, striving for precision in everything. Practical and analytical, sometimes overly self-critical.'}},
+  {symbol:'♎', start:[9,23], end:[10,22],
+    ar:{name:'الميزان', desc:'دبلوماسي ومحب للتوازن، يسعى دائماً للعدالة والانسجام في علاقاته. لطيف واجتماعي، لكنه قد يتردد أمام القرارات الصعبة.'},
+    en:{name:'Libra', desc:'Diplomatic and fair, seeking balance and harmony in relationships. Charming and sociable, though sometimes indecisive.'}},
+  {symbol:'♏', start:[10,23], end:[11,21],
+    ar:{name:'العقرب', desc:'قوي الإرادة وعميق المشاعر، يتعامل بشغف مع من يثق بهم. غامض وحكيم، ولا ينسى بسهولة.'},
+    en:{name:'Scorpio', desc:'Intense and deeply loyal, passionate toward those they trust. Mysterious and perceptive, with a long memory.'}},
+  {symbol:'♐', start:[11,22], end:[12,21],
+    ar:{name:'القوس', desc:'محب للحرية والمغامرة، متفائل ويبحث دائماً عن معنى ومعرفة جديدة. صريح ومرح، لكنه قد يكون غير صبور أحياناً.'},
+    en:{name:'Sagittarius', desc:'Adventurous and optimistic, always seeking new meaning and horizons. Honest and fun-loving, though occasionally restless.'}},
+  {symbol:'♑', start:[12,22], end:[1,19],
+    ar:{name:'الجدي', desc:'طموح ومنضبط، يعمل بجد نحو أهدافه بعيدة المدى. مسؤول وواقعي، ويحب أن يرى نتائج ملموسة لجهده.'},
+    en:{name:'Capricorn', desc:'Disciplined and ambitious, working steadily toward long-term goals. Responsible and realistic, valuing tangible results.'}},
+  {symbol:'♒', start:[1,20], end:[2,18],
+    ar:{name:'الدلو', desc:'مستقل ومبتكر، يحب الأفكار غير التقليدية ويهتم بالمجتمع من حوله. صديق وفي، لكنه يقدّر حريته كثيراً.'},
+    en:{name:'Aquarius', desc:'Independent and inventive, drawn to original ideas and community causes. A loyal friend who deeply values freedom.'}},
+  {symbol:'♓', start:[2,19], end:[3,20],
+    ar:{name:'الحوت', desc:'حالم وحساس، يمتلك خيالاً واسعاً وتعاطفاً عميقاً مع الآخرين. فني ولطيف، لكنه قد يحتاج لحدود واضحة أحياناً.'},
+    en:{name:'Pisces', desc:'Dreamy and empathetic, with vivid imagination and deep compassion. Gentle and artistic, sometimes needing clearer boundaries.'}}
+];
+
+function getZodiac(month, day){
+  for(const z of ZODIAC){
+    const [sm,sd]=z.start, [em,ed]=z.end;
+    if(sm<=em){
+      if((month===sm&&day>=sd)||(month===em&&day<=ed)||(month>sm&&month<em)) return z;
+    } else {
+      if((month===sm&&day>=sd)||(month===em&&day<=ed)||month>sm||month<em) return z;
+    }
+  }
+  return ZODIAC[0];
+}
+
+/* ================= Hijri <-> Gregorian conversion (tabular/civil algorithm) ================= */
+function gregorianToJD(y,m,d){
+  const a = Math.floor((14-m)/12);
+  const y2 = y+4800-a;
+  const m2 = m+12*a-3;
+  return d + Math.floor((153*m2+2)/5) + 365*y2 + Math.floor(y2/4) - Math.floor(y2/100) + Math.floor(y2/400) - 32045;
+}
+function hijriToJD(y,m,d){
+  return Math.floor((11*y+3)/30) + 354*y + 30*m - Math.floor((m-1)/2) + d + 1948440 - 385;
+}
+function jdToGregorian(jd){
+  const a = jd+32044;
+  const b = Math.floor((4*a+3)/146097);
+  const c = a - Math.floor((146097*b)/4);
+  const d2 = Math.floor((4*c+3)/1461);
+  const e = c - Math.floor((1461*d2)/4);
+  const m2 = Math.floor((5*e+2)/153);
+  const day = e - Math.floor((153*m2+2)/5) + 1;
+  const month = m2+3-12*Math.floor(m2/10);
+  const year = 100*b + d2 - 4800 + Math.floor(m2/10);
+  return {year, month, day};
+}
+
+/* ================= State ================= */
+let lang = 'ar';
+let calSystem = 'gregorian';
+let birthDate = null;
+let countdownTimer = null;
+
+const $ = id => document.getElementById(id);
+
+/* ================= Populate date selects ================= */
+function populateSelects(){
+  const t = T[lang];
+  const dayField = $('dayField'), monthField = $('monthField'), yearField = $('yearField');
+  dayField.innerHTML=''; monthField.innerHTML=''; yearField.innerHTML='';
+
+  for(let d=1; d<=31; d++){
+    const o = document.createElement('option'); o.value=d; o.textContent=d;
+    dayField.appendChild(o);
+  }
+
+  const monthNames = calSystem==='hijri' ? t.hMonths : t.gMonths;
+  monthNames.forEach((name,i)=>{
+    const o = document.createElement('option'); o.value=i+1; o.textContent=name;
+    monthField.appendChild(o);
+  });
+
+  const now = new Date();
+  if(calSystem==='hijri'){
+    const nowHijri = jdToHijriApprox(now);
+    for(let y=nowHijri-100; y<=nowHijri+1; y++){
+      const o = document.createElement('option'); o.value=y; o.textContent=y;
+      if(y===nowHijri-25) o.selected=true;
+      yearField.appendChild(o);
+    }
+  } else {
+    const cy = now.getFullYear();
+    for(let y=cy-100; y<=cy; y++){
+      const o = document.createElement('option'); o.value=y; o.textContent=y;
+      if(y===cy-25) o.selected=true;
+      yearField.appendChild(o);
+    }
+  }
+}
+function jdToHijriApprox(dateObj){
+  const jd = gregorianToJD(dateObj.getFullYear(), dateObj.getMonth()+1, dateObj.getDate());
+  let l = jd - 1948440 + 10632;
+  const n = Math.floor((l-1)/10631);
+  l = l - 10631*n + 354;
+  const j = Math.floor((10985-l)/5316)*Math.floor((50*l)/17719) + Math.floor(l/5670)*Math.floor((43*l)/15238);
+  l = l - Math.floor((30-j)/15)*Math.floor((17719*j)/50) - Math.floor(j/16)*Math.floor((15238*j)/43) + 29;
+  const y = 30*n + j - 30;
+  return y;
+}
+
+/* ================= Age calculation ================= */
+function calcAgeParts(birth, today){
+  let y = today.getFullYear() - birth.getFullYear();
+  let m = today.getMonth() - birth.getMonth();
+  let d = today.getDate() - birth.getDate();
+  if(d<0){
+    m--;
+    const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+    d += prevMonth.getDate();
+  }
+  if(m<0){ y--; m+=12; }
+  return {y,m,d};
+}
+
+function updateResults(){
+  const t = T[lang];
+  const today = new Date();
+  const {y,m,d} = calcAgeParts(birthDate, today);
+  $('ageYears').textContent = y;
+  $('ageMonths').textContent = m;
+  $('ageDays').textContent = d;
+
+  const totalMs = today - birthDate;
+  const totalDays = Math.floor(totalMs/86400000);
+  const totalMonths = (today.getFullYear()-birthDate.getFullYear())*12 + (today.getMonth()-birthDate.getMonth()) - (today.getDate()<birthDate.getDate()?1:0);
+  const totalWeeks = Math.floor(totalDays/7);
+  const totalHours = Math.floor(totalMs/3600000);
+  const totalMinutes = Math.floor(totalMs/60000);
+
+  $('unitMonths').textContent = totalMonths.toLocaleString();
+  $('unitWeeks').textContent = totalWeeks.toLocaleString();
+  $('unitHours').textContent = totalHours.toLocaleString();
+  $('unitMinutes').textContent = totalMinutes.toLocaleString();
+
+  // Fun facts
+  $('factDay').textContent = t.weekdays[birthDate.getDay()];
+  const seasonIdx = getSeasonIndex(birthDate.getMonth()+1);
+  $('factSeason').textContent = t.seasons[seasonIdx];
+
+  const breaths = Math.round(totalMinutes*16);
+  const heartbeats = Math.round(totalMinutes*75);
+  const laughs = Math.round(totalDays*15);
+  const sleepYears = (totalDays*8/24/365.25).toFixed(1);
+  $('factBreaths').textContent = breaths.toLocaleString();
+  $('factHeartbeats').textContent = heartbeats.toLocaleString();
+  $('factLaughs').textContent = laughs.toLocaleString();
+  $('factSleep').textContent = sleepYears;
+
+  // Zodiac
+  const z = getZodiac(birthDate.getMonth()+1, birthDate.getDate());
+  $('zodiacSymbol').textContent = z.symbol;
+  $('zodiacName').textContent = z[lang].name;
+  $('zodiacDesc').textContent = z[lang].desc;
+
+  startCountdown();
+}
+
+function getSeasonIndex(month){
+  if(month===12||month===1||month===2) return 0;
+  if(month>=3&&month<=5) return 1;
+  if(month>=6&&month<=8) return 2;
+  return 3;
+}
+
+function startCountdown(){
+  if(countdownTimer) clearInterval(countdownTimer);
+  const t = T[lang];
+
+  function tick(){
+    const now = new Date();
+    let next = new Date(now.getFullYear(), birthDate.getMonth(), birthDate.getDate());
+    if(next <= now) next.setFullYear(now.getFullYear()+1);
+    let last = new Date(next); last.setFullYear(next.getFullYear()-1);
+
+    const diff = next - now;
+    const days = Math.floor(diff/86400000);
+    const hours = Math.floor((diff%86400000)/3600000);
+    const mins = Math.floor((diff%3600000)/60000);
+    const secs = Math.floor((diff%60000)/1000);
+
+    $('cdDays').textContent = days;
+    $('cdHours').textContent = hours;
+    $('cdMinutes').textContent = mins;
+    $('cdSeconds').textContent = secs;
+
+    const dateLbl = (lang==='ar')
+      ? `${t.weekdays[next.getDay()]}، ${next.getDate()} ${t.gMonths[next.getMonth()]} ${next.getFullYear()}`
+      : `${t.weekdays[next.getDay()]}, ${t.gMonths[next.getMonth()]} ${next.getDate()}, ${next.getFullYear()}`;
+    $('nextBirthdayDate').textContent = dateLbl;
+
+    const progress = (now-last)/(next-last);
+    const circumference = 2*Math.PI*60;
+    const offset = circumference*(1-progress);
+    $('ringFg').style.strokeDasharray = circumference;
+    $('ringFg').style.strokeDashoffset = offset;
+  }
+  tick();
+  countdownTimer = setInterval(tick, 1000);
+}
+
+/* ================= UI text application ================= */
+function applyLanguage(){
+  const t = T[lang];
+  document.documentElement.lang = lang;
+  document.documentElement.dir = t.dir;
+  document.body.className = lang==='en' ? 'lang-en' : '';
+
+  $('appTitle').textContent = t.appTitle;
+  $('backLink').textContent = t.back;
+  $('langSwitch').textContent = t.langBtn;
+  $('calGreg').textContent = t.gregorian;
+  $('calHijri').textContent = t.hijri;
+  $('calcBtn').textContent = t.calc;
+  $('recalcBtn').textContent = t.recalc;
+
+  $('lbl_section1').textContent = t.section1;
+  $('lbl_years').textContent = t.years;
+  $('lbl_months').textContent = t.months;
+  $('lbl_days').textContent = t.days;
+
+  $('lbl_section2').textContent = t.section2;
+  $('lbl_unitMonths').textContent = t.unitMonths;
+  $('lbl_unitWeeks').textContent = t.unitWeeks;
+  $('lbl_unitHours').textContent = t.unitHours;
+  $('lbl_unitMinutes').textContent = t.unitMinutes;
+
+  $('lbl_section3').textContent = t.section3;
+  $('lbl_cdDays').textContent = t.cdDays;
+  $('lbl_cdHours').textContent = t.cdHours;
+  $('lbl_cdMinutes').textContent = t.cdMinutes;
+  $('lbl_cdSeconds').textContent = t.cdSeconds;
+
+  $('lbl_section4').textContent = t.section4;
+  $('lbl_factDay').textContent = t.factDay;
+  $('lbl_factSeason').textContent = t.factSeason;
+  $('lbl_factBreaths').textContent = t.factBreaths;
+  $('lbl_factHeartbeats').textContent = t.factHeartbeats;
+  $('lbl_factLaughs').textContent = t.factLaughs;
+  $('lbl_factSleep').textContent = t.factSleep;
+
+  $('lbl_section5').textContent = t.section5;
+
+  populateSelects();
+  if(birthDate) updateResults();
+}
+
+/* ================= Event listeners ================= */
+document.querySelectorAll('.lang-buttons button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    lang = btn.dataset.lang;
+    $('langScreen').classList.add('hidden');
+    $('app').classList.remove('hidden');
+    applyLanguage();
+  });
+});
+
+$('langSwitch').addEventListener('click', ()=>{
+  lang = lang==='ar' ? 'en' : 'ar';
+  applyLanguage();
+});
+
+$('calGreg').addEventListener('click', ()=>{
+  calSystem='gregorian';
+  $('calGreg').classList.add('active');
+  $('calHijri').classList.remove('active');
+  populateSelects();
+});
+$('calHijri').addEventListener('click', ()=>{
+  calSystem='hijri';
+  $('calHijri').classList.add('active');
+  $('calGreg').classList.remove('active');
+  populateSelects();
+});
+
+$('calcBtn').addEventListener('click', ()=>{
+  const d = parseInt($('dayField').value,10);
+  const m = parseInt($('monthField').value,10);
+  const y = parseInt($('yearField').value,10);
+  const t = T[lang];
+  let gDate;
+
+  if(calSystem==='hijri'){
+    const jd = hijriToJD(y,m,d);
+    const g = jdToGregorian(jd);
+    gDate = new Date(g.year, g.month-1, g.day);
+  } else {
+    gDate = new Date(y, m-1, d);
+  }
+
+  if(gDate > new Date()){
+    $('errorMsg').textContent = t.errFuture;
+    $('errorMsg').style.display='block';
+    return;
+  }
+  $('errorMsg').style.display='none';
+  birthDate = gDate;
+  $('results').classList.remove('hidden');
+  updateResults();
+  $('results').scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+$('recalcBtn').addEventListener('click', ()=>{
+  $('results').classList.add('hidden');
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+</script>
+</body>
+          </html>
